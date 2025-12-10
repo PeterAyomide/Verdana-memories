@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Verdana Class of 2025 — Forest of Memories</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Dancing+Script:wght@600&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-overlay: linear-gradient(rgba(10, 30, 40, 0.6), rgba(5, 15, 25, 0.9));
+      --accent: #2ecc71;
+    }
+
+    body {
+      background: #0a0f0f; color: #e0f7ff;
+      font-family: 'Montserrat', sans-serif;
+      overflow-x: hidden; min-height: 100vh; position: relative;
+      cursor: default; transition: filter 1s ease;
+    }
+
+    /* SEASONAL THEMES */
+    body.season-autumn { --accent: #e67e22; --bg-overlay: linear-gradient(rgba(60, 30, 10, 0.6), rgba(40, 15, 5, 0.9)); }
+    body.season-autumn .leaf { background: #d35400; }
+    
+    body.season-winter { --accent: #3498db; --bg-overlay: linear-gradient(rgba(10, 20, 50, 0.6), rgba(5, 10, 30, 0.9)); }
+    body.season-winter .leaf { background: #fff; border-radius: 50%; width: 6px; height: 6px; box-shadow: 0 0 5px #fff; } 
+
+    /* --- 1. ENTER SCREEN --- */
+    #enterScreen {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #020505; z-index: 9999;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      transition: opacity 1.5s ease-in-out;
+    }
+    .enter-btn {
+      padding: 15px 50px; background: transparent; border: 1px solid #2ecc71;
+      color: #2ecc71; font-family: 'Montserrat'; letter-spacing: 3px; cursor: pointer;
+      font-size: 1rem; transition: all 0.5s; border-radius: 50px; text-transform: uppercase;
+      box-shadow: 0 0 15px rgba(46, 204, 113, 0.2);
+    }
+    .enter-btn:hover { background: #2ecc71; color: #000; box-shadow: 0 0 40px rgba(46, 204, 113, 0.6); transform: scale(1.05); }
+
+    /* --- 2. BACKGROUND --- */
+    .tree-bg {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100vh; 
+      background: var(--bg-overlay), url('tree-bg.jpg') center/cover no-repeat;
+      z-index: 1; animation: breathe 25s ease-in-out infinite alternate; will-change: transform; 
+      transition: background 1.5s ease;
+    }
+    @keyframes breathe { 0% { transform: scale(1); filter: brightness(0.8); } 100% { transform: scale(1.05); filter: brightness(1); } }
+
+    #rootsCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 4; pointer-events: none; opacity: 0.3; }
+
+    .leaf {
+      position: fixed; top: -10%; width: 15px; height: 15px;
+      background: rgba(46, 204, 113, 0.1); border-radius: 2px 10px;
+      pointer-events: none; z-index: 2; animation: fall linear infinite;
+      transition: background 1.5s, border-radius 1.5s;
+    }
+    @keyframes fall {
+      0% { transform: translateY(-10vh) rotate(0deg) translateX(0px); opacity: 0; }
+      10% { opacity: 0.5; }
+      100% { transform: translateY(110vh) rotate(720deg) translateX(50px); opacity: 0; }
+    }
+
+    .trail-dot {
+      position: fixed; width: 8px; height: 8px; background: white; border-radius: 50%;
+      pointer-events: none; z-index: 999; animation: fadeTrail 1s forwards;
+      box-shadow: 0 0 10px #fff, 0 0 20px var(--accent);
+    }
+    @keyframes fadeTrail { to { opacity: 0; transform: scale(0); } }
+
+    /* --- 3. LAYOUT --- */
+    .container { position: relative; z-index: 5; width: 100%; min-height: 100vh; padding: 30px 20px 100px 20px; }
+    .header { text-align: center; margin-bottom: 50px; padding-top: 40px; position: relative; z-index: 60; }
+    
+    .main-title {
+      font-size: 3.5rem; font-weight: 600; color: #ffffff; margin-bottom: 15px; letter-spacing: 2px;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.4), 0 0 40px var(--accent), 0.3;
+      animation: titleGlow 5s ease-in-out infinite alternate;
+    }
+    @keyframes titleGlow { 0% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.4); } 100% { text-shadow: 0 0 50px rgba(255, 255, 255, 0.8), 0 0 80px var(--accent); } }
+
+    .subtitle { font-size: 1.2rem; color: #ffffff; font-weight: 300; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 25px; opacity: 0.8; }
+    .quote { font-style: italic; color: #b4e0ff; font-size: 1.1rem; max-width: 600px; margin: 0 auto; line-height: 1.8; border-left: 2px solid var(--accent); padding-left: 20px; }
+
+    /* --- 4. FIREFLIES --- */
+    .firefly {
+      position: absolute; width: 60px; height: 60px; display: flex; justify-content: center; align-items: center;
+      z-index: 10; cursor: pointer;
+      transition: left 2s cubic-bezier(0.25, 1, 0.5, 1), top 2s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s, transform 0.5s;
+      -webkit-tap-highlight-color: transparent; 
+    }
+    .firefly.drifting { animation: wideDrift 25s ease-in-out infinite; }
+
+    .firefly-inner {
+      width: 35px; height: 35px; border-radius: 50%;
+      background-color: var(--glow-color); 
+      box-shadow: 0 0 15px var(--glow-color), 0 0 30px var(--glow-color);
+      background-size: cover; background-position: center;
+      opacity: 0.8; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative; display: flex; justify-content: center; align-items: center;
+      color: white; font-weight: bold; font-size: 14px; text-shadow: 0 0 4px #000;
+    }
+    .firefly-inner.image-loaded { opacity: 1; border: 1px solid rgba(255,255,255,0.6); }
+    .firefly:hover { z-index: 100; }
+    .firefly.drifting:hover { animation-play-state: paused; }
+    .firefly:hover .firefly-inner { transform: scale(2.2); filter: brightness(1.2); box-shadow: 0 0 20px #fff, 0 0 40px var(--glow-color), 0 0 80px var(--glow-color); }
+
+    .firefly-name {
+      position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%);
+      font-size: 11px; font-weight: 600; color: #fff;
+      background: rgba(0, 0, 0, 0.85); padding: 5px 12px; border-radius: 12px;
+      white-space: nowrap; opacity: 0; pointer-events: none; z-index: 20;
+      transition: opacity 0.3s ease; border: 1px solid rgba(255,255,255,0.2);
+    }
+    .firefly:hover .firefly-name { opacity: 1; }
+    .firefly.dimmed { opacity: 0.05; transform: scale(0.5); pointer-events: none; }
+    .firefly.matched { opacity: 1; z-index: 50; }
+
+    @keyframes wideDrift {
+      0%, 100% { transform: translate(0, 0); }
+      25% { transform: translate(40px, -40px); }
+      50% { transform: translate(-30px, 50px); }
+      75% { transform: translate(-50px, -20px); }
+    }
+    .firefly:nth-child(odd).drifting { animation-duration: 30s; animation-direction: reverse; }
+
+    /* --- 5. UI --- */
+    .ui-bar {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+      z-index: 200; width: 95%; max-width: 600px;
+      display: flex; gap: 10px; align-items: center; justify-content: center;
+    }
+    .search-input {
+      flex: 2; padding: 15px 25px; border-radius: 30px;
+      border: 1px solid rgba(255,255,255,0.2); background: rgba(10, 20, 30, 0.8);
+      color: white; font-family: 'Montserrat'; font-size: 1rem;
+      backdrop-filter: blur(10px); outline: none; box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      transition: all 0.3s;
+    }
+    .search-input:focus { border-color: var(--accent); box-shadow: 0 5px 25px rgba(46, 204, 113, 0.3); }
+
+    .icon-btn {
+      width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0;
+      border: none; background: linear-gradient(135deg, var(--accent), #27ae60);
+      color: white; cursor: pointer; display: flex; justify-content: center; align-items: center;
+      font-size: 1.2rem; box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+      transition: transform 0.2s, background 0.3s;
+    }
+    .icon-btn:active { transform: scale(0.9); }
+    .icon-btn.active { background: #e74c3c; animation: pulseRed 2s infinite; }
+    
+    .icon-btn.mode-active { background: #9b59b6; box-shadow: 0 0 20px #9b59b6; animation: rotateLoader 2s linear infinite; }
+    @keyframes rotateLoader { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); } }
+
+    /* --- 6. FLAT GLOWING MODAL (No 3D Bending) --- */
+    .tribute-modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.9); z-index: 1000; backdrop-filter: blur(10px);
+    }
+
+    .modal-content {
+      position: absolute; background: #151515; 
+      width: 360px; border-radius: 20px; padding: 40px 30px;
+      text-align: center; border: 1px solid rgba(255, 255, 255, 0.15);
+      
+      /* THE NEW GLOW EFFECT (Dynamic color injected via JS) */
+      box-shadow: 0 0 40px var(--modal-glow, rgba(46, 204, 113, 0.3));
+      
+      max-height: 85vh; overflow-y: auto; overflow-x: hidden;
+      animation: modalPop 0.4s ease-out;
+    }
+    
+    @keyframes modalPop { 
+      from { opacity: 0; transform: scale(0.9) translateY(20px); } 
+      to { opacity: 1; transform: scale(1) translateY(0); } 
+    }
+
+    .modal-photo {
+      width: 140px; height: 140px; border-radius: 50%; margin: 0 auto 15px;
+      background-size: cover; background-position: center;
+      border: 4px solid rgba(255,255,255,0.9);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+
+    .modal-name { 
+      font-family: 'Dancing Script', cursive; 
+      font-size: 2.5rem; font-weight: 600; color: #fff; margin-bottom: 10px; 
+      text-shadow: 0 5px 15px rgba(0,0,0,0.5); 
+    }
+
+    .modal-truth { 
+      font-size: 1rem; color: #f0f0f0; margin-bottom: 30px; line-height: 1.7; min-height: 60px;
+      font-weight: 300; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px;
+      font-style: italic; border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .typing-cursor::after { content: '|'; animation: blink 1s infinite; color: var(--accent); }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+    .close-btn {
+      padding: 12px 30px; border-radius: 30px; border: none; cursor: pointer;
+      font-family: 'Montserrat'; font-weight: 700; font-size: 0.9rem;
+      color: white; width: 100%; justify-content: center;
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+    }
+    .close-btn:hover { background: #fff; color: #000; }
+
+    .footer { position: relative; z-index: 10; text-align: center; padding: 0 20px 80px 20px; color: #88d3fa; font-size: 0.8rem; opacity: 0.7; }
+
+    @media (max-width: 768px) {
+      .main-title { font-size: 2.2rem; }
+      .firefly { width: 50px; height: 50px; }
+      .tribute-modal { display: none; align-items: center; justify-content: center; }
+      .modal-content { position: relative !important; left: auto !important; top: auto !important; margin: 0 auto; }
+      .ui-bar { bottom: 20px; width: 95%; gap: 5px; }
+      .icon-btn { width: 45px; height: 45px; font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <audio id="bgMusic" loop>
+    <source src="forest_theme.mp3" type="audio/mpeg">
+  </audio>
+
+  <div id="enterScreen">
+    <h1 id="enterTitle" style="color:white; font-family:'Montserrat'; font-weight:300; margin-bottom:10px; letter-spacing:8px; font-size:1.5rem; text-align:center;">VERDANA '25</h1>
+    <h2 id="enterSubtitle" style="color:#2ecc71; font-family:'Montserrat'; margin-bottom:40px; font-size:2.5rem; text-align:center;">FOREST OF MEMORIES</h2>
+    <button class="enter-btn" onclick="enterForest()">Enter Forest</button>
+  </div>
+
+  <div class="tree-bg"></div>
+  <div class="tree-aura"></div>
+  <canvas id="rootsCanvas"></canvas>
+  <div id="leafContainer"></div>
+
+  <div class="container" id="mainContainer">
+    <div class="header">
+      <h1 class="main-title">Forest of Memories</h1>
+      <div class="subtitle">Verdana Class of 2025</div>
+      <div class="quote">"Though our branches reach in different directions, our roots remain forever intertwined in this soil we called home."</div>
+    </div>
+    <div class="footer">Department of Forestry, University of Ibadan<br><em>Where every leaf tells a story</em></div>
+  </div>
+
+  <div class="ui-bar">
+    <input type="text" class="search-input" id="searchInput" placeholder="Find a classmate..." onkeyup="filterFireflies()">
+    <button class="icon-btn" id="seasonBtn" onclick="toggleSeason()" title="Change Season">🍃</button>
+    <button class="icon-btn" id="shapeBtn" onclick="startFormationSequence()" title="Start Formation Show">✨</button>
+    <button class="icon-btn" id="tourBtn" onclick="toggleTour()" title="Start Guided Tour">▶</button>
+  </div>
+
+  <div class="tribute-modal" id="tributeModal">
+    <div class="modal-content" id="modalContent">
+      <div class="modal-photo" id="modalPhoto"></div>
+      <h2 class="modal-name" id="modalName"></h2>
+      <div class="modal-truth" id="modalTruth"></div>
+      <button class="close-btn" onclick="closeModal()">Return to Forest</button>
+    </div>
+  </div>
+
+  <script>
+    const colors = ['#2ecc71', '#5e72e4', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#3498db', '#ff9ff3'];
+    
+    const realClassmates = [
+      { name: "AYANWOLA Oluwaseyi", truth: "You always knew your way around the ball. The Captain forever. You will definitely hit your goal." },
+      { name: "AASA Dolapo", truth: "First of his name, first of the class. You did it. The sky is just the first step on the journey. You have begun this path of greatness." },
+      { name: "ABDULFATAI Zaynab", truth: "Hey. Bisola. A gem that you are. You are going far." },
+      { name: "ABOSAN Temitope", truth: "An entrepreneur with a heart to serve. You will definitely scale through." },
+      { name: "ADARANIWON Emmanuel", truth: "Black like ever. Black but your smile and light shone through dark hearts. Keep being you." },
+      { name: "ADEDOJA Sarah", truth: "Agba Baller. You definitely had the aura and steeze. Keep balling." },
+      { name: "ADEDOKUN Lois", truth: "Silent as a dove, strong as an Eagle. You rocked this journey your own way." },
+      { name: "ADEGBOYE Peter", truth: "Even Machines learn from you. Never Yielding, never static, Never doubting. Keep being the rock." },
+      { name: "ADELEKE Victoria", truth: "Once an honourable, forever an honourable. You drove through the years like a wind. It's you!" },
+      { name: "ADENIJI Shukrat", truth: "You were a gift that kept giving. You will forever remain firm on the path to greatness." },
+      { name: "ADERINTO Comfort", truth: "Well, well, well. You have 2 options, walk elegantly to greatness or dance your way to impact. Cause that's what you are." },
+      { name: "ALABI Adeola", truth: "You lived with strength, fought with the crest, and now? You are blessed." },
+      { name: "ASAMU Azeezat", truth: "You had questions at the start, but now? You are the answer. You did it." },
+      { name: "ASOGBA Tawakalitu", truth: "What can't you name? Name it. Well, you didn't just name flora, you made a name for yourself TAWAAA!!!" },
+      { name: "AZODO Genevieve", truth: "Definitely! You were twice as tall. And you jumped over the hurdle. What a beauty to behold." },
+      { name: "EMOVON Osaretin", truth: "You were always cracked up and you also cracked the code. You deserved the best. Or wait You are the best." },
+      { name: "ETUMUDON Funmilayo", truth: "Shine through the struggles, now you are a diamond. You did that. Yes, you!" },
+      { name: "FAYIGA Kehinde", truth: "Pursued with purpose, now you swim in the pool of pleasure. You deserve the applause." },
+      { name: "FOLORUNSO Olaoluwa", truth: "Definitely the world will bow at your greatness. You have just begun the race, and you will do the best." },
+      { name: "GEGE Eniola", truth: "You fascinated not just the world but also yourself. They say you are a Modella." },
+      { name: "MAJOLAGBE Yusrah", truth: "Well, roses are red, violets are blue, they thought you won't, but you blew their minds." },
+      { name: "NWAIKPE Kelechi", truth: "Oh, my days! Yes, it's your day. You were resolute and you did that." },
+      { name: "OGUNDIRAN Favour", truth: "As the silent creek moved, so you did. Never were you fazed: Keep being brave." },
+      { name: "OGUNMOSIN Tobiloba", truth: "Were you tired? Were you concerned? We will never know 'cause you scaled through." },
+      { name: "OLAYIWOLA Opeyemi", truth: "I guess it was tough. But Ope, look ahead, it's greatness that's waiting for you. Walk to it." },
+      { name: "OLUWAGBEMIGA Gbolahan", truth: "Even if people questioned you, they will not understand how you did it. But you were a real Gee, O.F." },
+      { name: "OLUWASEUN Oyindamola", truth: "Sugar is sweet. Honey is sweeter, but you proved you were sweetest. How? You waved the bitterness away. Cheers." },
+      { name: "OPADEJI Deborah", truth: "Kept going like you were not being beaten and now, it's all a dream. You have been helped and now you can help." },
+      { name: "OWOLABI Oyiniola", truth: "Felt like forever, now it's over. Oyin, you made it. And it only gets better." },
+      { name: "OYADOKE Adesubomi", truth: "Was it you or another person. Definitely you. It's not over, but you can let your joy go over. Unto the next." },
+      { name: "OYEDIJO Olanrewaju", truth: "Maybe, just maybe, you will see the need to always be better. But you did your best, led the rest, and walked the length. It was amazing and you will do it again." },
+      { name: "QUADRI Ayomide", truth: "Flair like no one, set like the morning dew. You made it through." },
+      { name: "SALAMI Jessica", truth: "You did stress about the little things. But see you do the big things. You amazed the world. Everyone is wowed is the word. You rock." },
+      { name: "SUNMONU Halimat", truth: "Never will there be anyone like you again. You were almost perfect. 60 years from now, you will discover what you did. Cheers." },
+      { name: "YUSUF Habeeb", truth: "Felt out of touch right? But hey! You can now touch better things. Cheers." },
+      { name: "KUKOYI Esther", truth: "Sometimes it felt hard to understand. You did stay through and kept cool. You were the real Boss, the queen!" },
+      { name: "BELLO Aishat", truth: "Was there a period of less interest? Maybe. But did you put in your best? Definitely. Ashantii, you made a top kill! Enjoy." },
+      { name: "AYENI Opeyemi", truth: "Prayers were offered, debts were paid, but more importantly, sacrifice was made. But you did it. You never backed down. And that is what you are." },
+      { name: "FASAN Goodness", truth: "Freaking BGS. What can be said? It's all paid off. It will all pay off. You will get paid, Cause you paid the price." },
+      { name: "AIGBABHIELEA Fortunate", truth: "Fortunately, you are here today. It was a tough ride, yeah? Now you move on to the best." },
+      { name: "OKE David", truth: "It was strange at first, but you blended in so well, and now you have cooked the best you can. You can now enjoy." },
+      { name: "SANUSI Saidat", truth: "Does the rain fall without noise? Yet you made an impact without screams. You are incredible." },
+      { name: "ADAOLOWO Henry", truth: "Well, well, well, who do we have here? The vast and incredible Henry. This is your journey and you will make it." },
+      { name: "ADARAMOYE Oluwahukolami", truth: "You wielded your pen, and made the world dance." },
+      { name: "ADEDIRAN Saheed", truth: "You bent the real and made it work. Never yielding, always grinding. You were him." },
+      { name: "ADEKUNLE-ONI Daniel", truth: "When the road felt thorny, you wanted to leave I guess? But hey! Little did they know that you will fly over it. You are now bigger than ever." },
+      { name: "ADEOSUN Adeolu", truth: "You kept the goal safe. You made your mark. You have now set the mark. Keep jumping." },
+      { name: "ADEOYE Funmilayo", truth: "Nothing was too big for you. You maintained your composure and did your best. Now you have the best. You are amazing." },
+      { name: "ADESOKAN Taiwo", truth: "Let them know that you didn't cower, you didn't fret, you imagined, and it happened." },
+      { name: "AKADRI Moyosoluwa", truth: "Hey! The world is at your feet. Let them feel the heat." },
+      { name: "AKANBI Muzidatul-khair", truth: "Holding on to the best means doing the best. Don't worry, you are better than what they think you are." },
+      { name: "AKAPO Taiwo", truth: "The treasure that you had was nowhere to be found. Only you and your dreams could hold such a treasure. Now, go and spend, the esteemed Treasurer." },
+      { name: "AKIN-OLANIYI Olamide", truth: "Every move, step, was a challenge to you. You took it to the utmost height. Now you have set the challenge You are the bar." },
+      { name: "AKINTAYO Ayomide", truth: "Only the blind would ignore you. You Illuminated so much light and was such a delight. You had the might, Chai!" },
+      { name: "AWE Oluwatowoju", truth: "And maybe for once, you should see the whole picture. The picture was you not given up, you believing, and you doing it well." },
+      { name: "AYODELE Oluwatomiwa", truth: "Let the world know that it is done. Herald the call, that you have made it. Well, you are the scale in it." },
+      { name: "BABALOLA Rebecca", truth: "Beauty is in the eyes of the beholder. Lol. They had not seen you when they made this quote. You have radiated so much that people wonder how. And you have just begun." },
+      { name: "IPAYE Damilare", truth: "Asides the fact that you hit so many goals, you did it with such flair and steeze. Now, go and dominate." },
+      { name: "LAWAL Afeez", truth: "It as if was not going to end, but it has ended and it ended with you making it through. What a mark you made." },
+      { name: "LIADI Gloria", truth: "No one could do what you have done. You have run through a troop." },
+      { name: "MGBAKOR Ifechukwu", truth: "You were always giving and you kept giving. What a gift you are. The world is not ready for your steppings though." },
+      { name: "ODEFUNSO Ololade", truth: "Omo ope. You need to be grateful. Amazing things were done by you. Be grateful." },
+      { name: "OGUNKEYE Precious", truth: "Never was such a doggedness seen as was displayed by you. You made it look possible, yet it was hard. Keep being you." },
+      { name: "OGUNTOLA Oreoluwa", truth: "Only the wise can see that you were immersive. You did the absolute best that any human can do." },
+      { name: "OJOJO Folashade", truth: "Well, it is never to be forgotten that you walked through these halls. Your walk reverberated and made sounds unique to your signature." },
+      { name: "OKHIRIA Joshua", truth: "Heaven may fall, but your state of movement and doggedness will never fall. You played through it, and you became the best." },
+      { name: "OLABAMIJI Suhad", truth: "Even if it were the night, your might will still be in sight. In other words, never stop the fight." },
+      { name: "OLUWASUMBO Titilayo", truth: "It was always meant to be this. You were always meant to be this. You were always meant to test. You were always meant to beat the feat." },
+      { name: "OLATOYINBO Deborah", truth: "Nothing beats a jet 2 holiday right? Well, see. Nothing can beat you too now." },
+      { name: "OLOFINTUYI Fateemah", truth: "Everyday, you wake up, let the world know that they need to wake up to your grace and goodness." },
+      { name: "OLUPITAN Toheebat", truth: "Never let your heart deceive you; It was an amazing one. You were an amazing one." },
+      { name: "OLUWAKAYODE Jerry", truth: "Feeling funky right? You deserve it IT finally worked and you deserved a treat." },
+      { name: "ONYEUKWU Amarachi", truth: "Making this stride is nothing to feel less about. Shout it! Scream it and let them know, you did it." },
+      { name: "OYEBANJI Israel", truth: "Perspectives may differ, agenda may be long, but the scope is that, you were a giant. You always made a huge stride." },
+      { name: "OYEBODE Sunday", truth: "You started with cooking and ended with an amazing meal. You did the best and were the best." },
+      { name: "POPOOLA Olamide", truth: "It was an amazing journey. And without you in it, it will feel less. You were amazing and will continue to be." },
+      { name: "SORINADE Mary", truth: "Keep pushing. Why? you literally pushed this one through. You were incredible." },
+      { name: "THOMAS Daniel", truth: "Let it be known, that you came and became a a legend. Only you could have done it. Amazing stuff." }
+    ];
+
+    function getPhotoName(fullName) { return fullName.toLowerCase().replace(/ /g, '_') + '.jpg'; }
+
+    // State
+    const classmates = [];
+    let isTouring = false;
+    let formationState = 0; // 0=Drift, 1-6=Shapes
+    let autoCycleInterval = null;
+    let rainInterval = null; 
+    let tourIndex = 0;
+    let tourTimer = null;
+    let typeWriterInterval = null;
+    let currentSeason = 0; // 0=Spring, 1=Autumn, 2=Winter
+
+    // --- SETUP DATA ---
+    realClassmates.forEach((person, index) => {
+      classmates.push({
+        id: index,
+        name: person.name,
+        photo: `images/${getPhotoName(person.name)}`,
+        truth: person.truth,
+        x: 5 + Math.random() * 85, 
+        y: 400 + (index * 40) + (Math.random() * 100), 
+        color: colors[index % colors.length],
+      });
+    });
+
+    // --- ENTRY LOGIC ---
+    function enterForest() {
+      const screen = document.getElementById('enterScreen');
+      const music = document.getElementById('bgMusic');
+      screen.style.opacity = '0';
+      music.volume = 0.5;
+      music.play().catch(e => console.log("Audio blocked:", e));
+      setTimeout(() => {
+        screen.style.display = 'none';
+        initPage(); 
+      }, 1500);
+    }
+
+    function initPage() {
+      createFireflies();
+      createLeaves();
+      setTimeout(adjustContainerHeight, 100);
+      initRoots();
+    }
+
+    // --- 2. PARTICLES ---
+    function createFireflies() {
+      const container = document.getElementById('mainContainer');
+      classmates.forEach(classmate => {
+        const firefly = document.createElement('div');
+        firefly.className = 'firefly drifting';
+        firefly.id = `fly-${classmate.id}`;
+        firefly.style.setProperty('--glow-color', classmate.color);
+        firefly.style.left = `${classmate.x}vw`;
+        firefly.style.top = `${classmate.y}px`;
+        
+        const inner = document.createElement('div');
+        inner.className = 'firefly-inner';
+        
+        const img = new Image();
+        img.src = classmate.photo;
+        img.onload = () => { inner.style.backgroundImage = `url('${img.src}')`; inner.classList.add('image-loaded'); };
+        img.onerror = function() { if (this.src.endsWith('.jpg')) { this.src = this.src.replace('.jpg', '.jpeg'); } else { inner.innerText = classmate.name.charAt(0); inner.classList.add('image-loaded'); } };
+
+        firefly.appendChild(inner);
+        const nameLabel = document.createElement('div');
+        nameLabel.className = 'firefly-name';
+        nameLabel.textContent = classmate.name;
+        firefly.appendChild(nameLabel);
+        
+        firefly.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (isTouring) toggleTour(); 
+          if(formationState !== 0) { formationState = -1; cycleFormation(); } // Reset drift
+          showTribute(classmate, e.clientX, e.clientY);
+        });
+        
+        firefly.style.animationDelay = `${Math.random() * 10}s`;
+        container.appendChild(firefly);
+      });
+    }
+
+    function createLeaves() {
+      const container = document.getElementById('leafContainer');
+      for (let i = 0; i < 30; i++) {
+        const leaf = document.createElement('div');
+        leaf.className = 'leaf';
+        leaf.style.left = `${Math.random() * 100}vw`;
+        leaf.style.animationDuration = `${15 + Math.random() * 15}s`;
+        leaf.style.animationDelay = `${Math.random() * 10}s`;
+        container.appendChild(leaf);
+      }
+    }
+
+    // --- 3. AUTO CYCLE FORMATIONS ---
+    function startFormationSequence() {
+      const btn = document.getElementById('shapeBtn');
+      if (autoCycleInterval) { // Stop
+        clearInterval(autoCycleInterval);
+        autoCycleInterval = null;
+        formationState = -1; 
+        cycleFormation(); // Reset to Drift
+        btn.classList.remove('mode-active');
+        return;
+      }
+      
+      if(isTouring) toggleTour();
+      btn.classList.add('mode-active');
+      formationState = 0; // Start fresh
+      cycleFormation(); // First shape immediately
+      
+      autoCycleInterval = setInterval(() => {
+        // If we finished all shapes (State 6 was Infinity, now going to 7)
+        if (formationState === 6) {
+          clearInterval(autoCycleInterval);
+          autoCycleInterval = null;
+          formationState = -1; // Force drift
+          cycleFormation();
+          btn.classList.remove('mode-active');
+        } else {
+          cycleFormation();
+        }
+      }, 8000); // 8 seconds per shape
+    }
+
+    function cycleFormation() {
+      const fireflies = document.querySelectorAll('.firefly');
+      const count = fireflies.length;
+      const centerX = 50; 
+      const centerY = window.scrollY + (window.innerHeight / 2);
+      const scale = 12;
+
+      formationState = (formationState + 1) % 8; // 0=Drift, 1-6=Shapes, 7=Reset
+
+      if (formationState === 0) {
+        // Drift
+        fireflies.forEach((fly, i) => {
+          const person = classmates[i];
+          fly.style.left = `${person.x}vw`;
+          fly.style.top = `${person.y}px`;
+          fly.style.transform = 'scale(1)';
+          setTimeout(() => { if(formationState===0) fly.classList.add('drifting'); }, 1500);
+        });
+      } else {
+        fireflies.forEach(fly => fly.classList.remove('drifting'));
+        
+        fireflies.forEach((fly, i) => {
+          let x, y, s = 0.8;
+          
+          if (formationState === 1) { // HEART
+            const t = (i / count) * Math.PI * 2;
+            x = 16 * Math.pow(Math.sin(t), 3);
+            y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+            fly.style.left = `calc(${centerX}vw + ${x * scale}px)`;
+            fly.style.top = `${centerY + (y * scale)}px`;
+          } 
+          else if (formationState === 2) { // TREE
+            if (i < 10) { x = 0; y = 200 + (i * 15); } 
+            else {
+              const row = Math.floor((i-10) / 7); 
+              const spread = row * 40;
+              x = (Math.random() * spread) - (spread/2); y = -200 + (row * 35);
+            }
+            fly.style.left = `calc(${centerX}vw + ${x}px)`;
+            fly.style.top = `${centerY + y}px`;
+          } 
+          else if (formationState === 3) { // SPIRAL
+            const angle = 0.5 * i; const radius = 5 * i;
+            x = radius * Math.cos(angle); y = radius * Math.sin(angle);
+            fly.style.left = `calc(${centerX}vw + ${x}px)`;
+            fly.style.top = `${centerY + y}px`; s = 0.7;
+          } 
+          else if (formationState === 4) { // V
+            const half = Math.floor(count / 2);
+            if (i < half) { x = -250 + (i * (250/half)); y = -250 + (i * (500/half)); } 
+            else { const j = i - half; x = 0 + (j * (250/half)); y = 250 - (j * (500/half)); }
+            fly.style.left = `calc(${centerX}vw + ${x}px)`;
+            fly.style.top = `${centerY + y}px`; s = 0.9;
+          }
+          else if (formationState === 5) { // HELIX
+            const t = (i / count) * 4 * Math.PI; 
+            const width = 150; const height = 600;
+            const yPos = (i / count) * height - (height/2);
+            if (i % 2 === 0) { x = Math.sin(t) * width; } else { x = Math.sin(t + Math.PI) * width; }
+            fly.style.left = `calc(${centerX}vw + ${x}px)`;
+            fly.style.top = `${centerY + yPos}px`;
+          }
+          else if (formationState === 6) { // INFINITY
+            const t = (i / count) * 2 * Math.PI;
+            const a = 250;
+            x = (a * Math.cos(t)) / (1 + Math.sin(t)**2);
+            y = (a * Math.sin(t) * Math.cos(t)) / (1 + Math.sin(t)**2);
+            fly.style.left = `calc(${centerX}vw + ${x}px)`;
+            fly.style.top = `${centerY + y}px`;
+          }
+
+          fly.style.transform = `scale(${s})`;
+        });
+      }
+    }
+
+    // --- 4. SEASONS ENGINE ---
+    function toggleSeason() {
+      const btn = document.getElementById('seasonBtn');
+      currentSeason = (currentSeason + 1) % 3;
+      document.body.className = ''; // Reset
+      
+      if (currentSeason === 0) {
+        btn.textContent = '🍃'; // Spring
+      } else if (currentSeason === 1) {
+        document.body.classList.add('season-autumn');
+        btn.textContent = '🍁'; // Autumn
+      } else {
+        document.body.classList.add('season-winter');
+        btn.textContent = '❄️'; // Winter
+      }
+    }
+
+    // --- 5. ROOT CONNECTIONS ---
+    function initRoots() {
+      const canvas = document.getElementById('rootsCanvas');
+      const ctx = canvas.getContext('2d');
+      function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+      window.addEventListener('resize', resize); resize();
+
+      function animate() {
+        if (formationState === 0 && !isTouring) { 
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          const flies = document.querySelectorAll('.firefly');
+          const positions = [];
+          
+          flies.forEach(fly => {
+            const rect = fly.getBoundingClientRect();
+            positions.push({ x: rect.left + 30, y: rect.top + 30 });
+          });
+
+          ctx.lineWidth = 0.5;
+          ctx.strokeStyle = document.body.classList.contains('season-autumn') ? 'rgba(230, 126, 34, 0.3)' : 'rgba(46, 204, 113, 0.3)';
+          
+          for (let i = 0; i < positions.length; i++) {
+            for (let j = i + 1; j < positions.length; j++) {
+              const dx = positions[i].x - positions[j].x;
+              const dy = positions[i].y - positions[j].y;
+              const dist = Math.sqrt(dx*dx + dy*dy);
+              if (dist < 150) { 
+                ctx.beginPath(); ctx.moveTo(positions[i].x, positions[i].y); ctx.lineTo(positions[j].x, positions[j].y); ctx.stroke();
+              }
+            }
+          }
+        } else { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        requestAnimationFrame(animate);
+      }
+      animate();
+    }
+
+    // --- 6. MODAL & CONFETTI RAIN ---
+    const modalContent = document.getElementById('modalContent');
+
+    function showTribute(classmate, clickX, clickY) {
+      const modal = document.getElementById('tributeModal');
+      document.getElementById('modalName').textContent = classmate.name;
+      
+      // Dynamic Glow (Flat)
+      modalContent.style.background = `linear-gradient(145deg, #151515, ${classmate.color}10)`;
+      modalContent.style.border = `1px solid ${classmate.color}60`;
+      modalContent.style.setProperty('--modal-glow', classmate.color);
+      
+      const modalPhoto = document.getElementById('modalPhoto');
+      modalPhoto.style.backgroundImage = 'none';
+      modalPhoto.style.backgroundColor = classmate.color;
+      modalPhoto.style.borderColor = classmate.color;
+      
+      const tempImg = new Image();
+      tempImg.src = classmate.photo;
+      tempImg.onload = () => { modalPhoto.style.backgroundImage = `url('${tempImg.src}')`; };
+      tempImg.onerror = function() { if (this.src.endsWith('.jpg')) this.src = this.src.replace('.jpg', '.jpeg'); };
+
+      const truthBox = document.getElementById('modalTruth');
+      truthBox.innerHTML = ''; truthBox.classList.add('typing-cursor');
+      clearInterval(typeWriterInterval);
+      let text = `"${classmate.truth}"`; let i = 0;
+      typeWriterInterval = setInterval(() => {
+        if (i < text.length) { truthBox.innerHTML += text.charAt(i); i++; } 
+        else { clearInterval(typeWriterInterval); truthBox.classList.remove('typing-cursor'); }
+      }, 30);
+
+      if(window.innerWidth > 768 && clickX && clickY) {
+        modal.style.display = 'block';
+        const boxW = 360, boxH = 450;
+        let posX = clickX + 20; if (posX + boxW > window.innerWidth) posX = clickX - boxW - 20;
+        let posY = clickY - 50; if (posY + boxH > window.innerHeight) posY = window.innerHeight - boxH - 20;
+        modalContent.style.left = `${posX}px`; modalContent.style.top = `${posY}px`;
+      } else {
+        modal.style.display = 'flex'; modalContent.style.left = 'auto'; modalContent.style.top = 'auto';
+      }
+
+      // TRIGGER CONFETTI
+      burst(); // Immediate pop
+      startRain(); // Followed by rain
+    }
+
+    function closeModal() {
+      document.getElementById('tributeModal').style.display = 'none';
+      clearInterval(typeWriterInterval);
+      
+      // Only stop rain if NOT touring. If touring, rain persists.
+      if (!isTouring) stopRain(); 
+      
+      if (isTouring) return; // Don't cancel tour on close
+    }
+
+    // CONFETTI LOGIC
+    function burst() {
+      confetti({
+        particleCount: 100, spread: 70, origin: { y: 0.6 },
+        zIndex: 9999, // TOP LAYER
+        colors: ['#2ecc71', '#f1c40f', '#e74c3c', '#3498db']
+      });
+    }
+
+    function startRain() {
+      if (rainInterval) return; 
+      const defaults = { origin: { y: -0.1 }, zIndex: 9999, gravity: 0.5 };
+      rainInterval = setInterval(() => {
+        confetti(Object.assign({}, defaults, {
+          particleCount: 3, spread: 360, startVelocity: 15, ticks: 300,
+          colors: ['#2ecc71', '#f1c40f', '#e74c3c', '#3498db']
+        }));
+      }, 200);
+    }
+
+    function stopRain() {
+      clearInterval(rainInterval);
+      rainInterval = null;
+      confetti.reset();
+    }
+
+    // --- SEARCH ---
+    function filterFireflies() {
+      const input = document.getElementById('searchInput').value.toLowerCase();
+      const fireflies = document.querySelectorAll('.firefly');
+      fireflies.forEach(fly => {
+        const name = fly.querySelector('.firefly-name').textContent.toLowerCase();
+        if (name.includes(input) && input.length > 0) {
+          fly.classList.remove('dimmed'); fly.classList.add('matched');
+        } else if (input.length > 0) {
+          fly.classList.add('dimmed'); fly.classList.remove('matched');
+        } else {
+          fly.classList.remove('dimmed', 'matched');
+        }
+      });
+    }
+
+    // --- TOUR ---
+    function toggleTour() {
+      const btn = document.getElementById('tourBtn');
+      isTouring = !isTouring;
+      if (isTouring) {
+        if(formationState !== 0) { formationState = -1; cycleFormation(); } 
+        btn.textContent = '■'; btn.classList.add('active');
+        tourIndex = 0; 
+        
+        // Start constant rain for tour
+        burst();
+        startRain(); 
+        playNextTribute();
+      } else {
+        btn.textContent = '▶'; btn.classList.remove('active');
+        clearTimeout(tourTimer); 
+        stopRain();
+        closeModal();
+      }
+    }
+
+    function playNextTribute() {
+      if (!isTouring) return;
+      if (tourIndex >= classmates.length) { toggleTour(); return; } 
+      const person = classmates[tourIndex];
+      window.scrollTo({ top: person.y - 200, behavior: 'smooth' });
+      setTimeout(() => {
+        if (!isTouring) return;
+        showTribute(person, null, null); 
+        // Rain is already running from toggleTour
+        
+        tourTimer = setTimeout(() => {
+          document.getElementById('tributeModal').style.display = 'none';
+          // DO NOT STOP RAIN HERE
+          tourIndex++;
+          playNextTribute();
+        }, 10000); // 10 Seconds
+      }, 800);
+    }
+
+    // --- UTILS ---
+    document.addEventListener('mousemove', (e) => { if(Math.random()>0.5) { const d=document.createElement('div'); d.className='trail-dot'; d.style.left=e.clientX+'px'; d.style.top=e.clientY+'px'; document.body.appendChild(d); setTimeout(()=>d.remove(),1000); }});
+    document.getElementById('tributeModal').addEventListener('click', (e) => { if (e.target === document.getElementById('tributeModal')) closeModal(); });
+    function adjustContainerHeight() {
+      const container = document.querySelector('.container'); const fireflies = document.querySelectorAll('.firefly');
+      let maxBottom = 0; fireflies.forEach(fly => maxBottom = Math.max(maxBottom, fly.getBoundingClientRect().bottom + window.scrollY));
+      container.style.minHeight = `${maxBottom + 200}px`;
+    }
+    window.addEventListener('resize', adjustContainerHeight);
+  </script>
+</body>
+</html>
