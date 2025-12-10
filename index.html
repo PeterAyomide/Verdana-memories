@@ -76,7 +76,7 @@
     @keyframes fadeTrail { to { opacity: 0; transform: scale(0); } }
 
     /* --- 3. LAYOUT --- */
-    .container { position: relative; z-index: 5; width: 100%; min-height: 100vh; padding: 30px 20px 100px 20px; }
+    .container { position: relative; z-index: 5; width: 100%; min-height: 100vh; padding: 30px 20px 150px 20px; }
     .header { text-align: center; margin-bottom: 50px; padding-top: 40px; position: relative; z-index: 60; }
     
     .main-title {
@@ -131,7 +131,7 @@
     }
     .firefly:nth-child(odd).drifting { animation-duration: 30s; animation-direction: reverse; }
 
-    /* --- 5. UI --- */
+    /* --- 5. UI (MOBILE FIX) --- */
     .ui-bar {
       position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
       z-index: 200; width: 95%; max-width: 600px;
@@ -145,6 +145,10 @@
       transition: all 0.3s;
     }
     .search-input:focus { border-color: var(--accent); box-shadow: 0 5px 25px rgba(46, 204, 113, 0.3); }
+
+    .controls-row {
+      display: flex; gap: 10px;
+    }
 
     .icon-btn {
       width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0;
@@ -160,7 +164,7 @@
     @keyframes rotateLoader { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); } }
 
-    /* --- 6. FLAT GLOWING MODAL (No 3D Bending) --- */
+    /* --- 6. FLAT GLOWING MODAL --- */
     .tribute-modal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.9); z-index: 1000; backdrop-filter: blur(10px);
@@ -171,7 +175,7 @@
       width: 360px; border-radius: 20px; padding: 40px 30px;
       text-align: center; border: 1px solid rgba(255, 255, 255, 0.15);
       
-      /* THE NEW GLOW EFFECT (Dynamic color injected via JS) */
+      /* THE GLOW EFFECT */
       box-shadow: 0 0 40px var(--modal-glow, rgba(46, 204, 113, 0.3));
       
       max-height: 85vh; overflow-y: auto; overflow-x: hidden;
@@ -215,13 +219,28 @@
 
     .footer { position: relative; z-index: 10; text-align: center; padding: 0 20px 80px 20px; color: #88d3fa; font-size: 0.8rem; opacity: 0.7; }
 
+    /* --- MOBILE RESPONSIVENESS FIXES --- */
     @media (max-width: 768px) {
       .main-title { font-size: 2.2rem; }
+      
+      /* Fix 1: Stack the UI Bar */
+      .ui-bar {
+        flex-direction: column;
+        width: 90%;
+        bottom: 15px;
+        gap: 10px;
+      }
+      .search-input { width: 100%; }
+      .controls-row { width: 100%; justify-content: center; gap: 15px; }
+      
       .firefly { width: 50px; height: 50px; }
+      
+      /* Fix Modal on Mobile */
       .tribute-modal { display: none; align-items: center; justify-content: center; }
-      .modal-content { position: relative !important; left: auto !important; top: auto !important; margin: 0 auto; }
-      .ui-bar { bottom: 20px; width: 95%; gap: 5px; }
-      .icon-btn { width: 45px; height: 45px; font-size: 1rem; }
+      .modal-content { 
+        position: relative !important; left: auto !important; top: auto !important; margin: 0 auto;
+        transform: none !important; width: 90%;
+      }
     }
   </style>
 </head>
@@ -253,9 +272,11 @@
 
   <div class="ui-bar">
     <input type="text" class="search-input" id="searchInput" placeholder="Find a classmate..." onkeyup="filterFireflies()">
-    <button class="icon-btn" id="seasonBtn" onclick="toggleSeason()" title="Change Season">🍃</button>
-    <button class="icon-btn" id="shapeBtn" onclick="startFormationSequence()" title="Start Formation Show">✨</button>
-    <button class="icon-btn" id="tourBtn" onclick="toggleTour()" title="Start Guided Tour">▶</button>
+    <div class="controls-row">
+      <button class="icon-btn" id="seasonBtn" onclick="toggleSeason()" title="Change Season">🍃</button>
+      <button class="icon-btn" id="shapeBtn" onclick="startFormationSequence()" title="Start Formation Show">✨</button>
+      <button class="icon-btn" id="tourBtn" onclick="toggleTour()" title="Start Guided Tour">▶</button>
+    </div>
   </div>
 
   <div class="tribute-modal" id="tributeModal">
@@ -477,12 +498,17 @@
       }, 8000); // 8 seconds per shape
     }
 
+    // FIX FOR MOBILE SHAPES: Reduce Scale
+    function getShapeScale() {
+      return window.innerWidth < 768 ? 7 : 12; // Mobile scale = 7, Desktop = 12
+    }
+
     function cycleFormation() {
       const fireflies = document.querySelectorAll('.firefly');
       const count = fireflies.length;
       const centerX = 50; 
       const centerY = window.scrollY + (window.innerHeight / 2);
-      const scale = 12;
+      const scale = getShapeScale(); // Use dynamic scale
 
       formationState = (formationState + 1) % 8; // 0=Drift, 1-6=Shapes, 7=Reset
 
@@ -509,31 +535,35 @@
             fly.style.top = `${centerY + (y * scale)}px`;
           } 
           else if (formationState === 2) { // TREE
-            if (i < 10) { x = 0; y = 200 + (i * 15); } 
+            if (i < 10) { x = 0; y = 200 + (i * 1.2 * scale); } 
             else {
               const row = Math.floor((i-10) / 7); 
-              const spread = row * 40;
-              x = (Math.random() * spread) - (spread/2); y = -200 + (row * 35);
+              const spread = row * 3.5 * scale;
+              x = (Math.random() * spread) - (spread/2); y = -200 + (row * 3 * scale);
             }
             fly.style.left = `calc(${centerX}vw + ${x}px)`;
             fly.style.top = `${centerY + y}px`;
           } 
           else if (formationState === 3) { // SPIRAL
-            const angle = 0.5 * i; const radius = 5 * i;
+            const angle = 0.5 * i; const radius = 0.4 * scale * i;
             x = radius * Math.cos(angle); y = radius * Math.sin(angle);
             fly.style.left = `calc(${centerX}vw + ${x}px)`;
             fly.style.top = `${centerY + y}px`; s = 0.7;
           } 
           else if (formationState === 4) { // V
             const half = Math.floor(count / 2);
-            if (i < half) { x = -250 + (i * (250/half)); y = -250 + (i * (500/half)); } 
-            else { const j = i - half; x = 0 + (j * (250/half)); y = 250 - (j * (500/half)); }
+            // V shape needs careful mobile scaling
+            const widthScale = window.innerWidth < 768 ? 150 : 250;
+            const heightScale = window.innerWidth < 768 ? 300 : 500;
+            
+            if (i < half) { x = -widthScale + (i * (widthScale/half)); y = -250 + (i * (heightScale/half)); } 
+            else { const j = i - half; x = 0 + (j * (widthScale/half)); y = 250 - (j * (heightScale/half)); }
             fly.style.left = `calc(${centerX}vw + ${x}px)`;
             fly.style.top = `${centerY + y}px`; s = 0.9;
           }
           else if (formationState === 5) { // HELIX
             const t = (i / count) * 4 * Math.PI; 
-            const width = 150; const height = 600;
+            const width = 12 * scale; const height = 600;
             const yPos = (i / count) * height - (height/2);
             if (i % 2 === 0) { x = Math.sin(t) * width; } else { x = Math.sin(t + Math.PI) * width; }
             fly.style.left = `calc(${centerX}vw + ${x}px)`;
@@ -541,7 +571,7 @@
           }
           else if (formationState === 6) { // INFINITY
             const t = (i / count) * 2 * Math.PI;
-            const a = 250;
+            const a = 20 * scale;
             x = (a * Math.cos(t)) / (1 + Math.sin(t)**2);
             y = (a * Math.sin(t) * Math.cos(t)) / (1 + Math.sin(t)**2);
             fly.style.left = `calc(${centerX}vw + ${x}px)`;
