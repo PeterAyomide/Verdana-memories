@@ -784,7 +784,23 @@
       container.style.minHeight = `${maxBottom + 200}px`;
     }
     window.addEventListener('resize', adjustContainerHeight);
+
+    // --- 8. SMART AUDIO (Pause on Tab Switch) ---
+    document.addEventListener("visibilitychange", () => {
+      const music = document.getElementById('bgMusic');
+      const enterScreen = document.getElementById('enterScreen');
+
+      // Only control music if the user has actually entered the forest
+      if (enterScreen.style.display === 'none') {
+        if (document.hidden) {
+          music.pause(); // User left the tab -> Pause
+        } else {
+          music.play();  // User came back -> Resume
+        }
+      }
+    });
   </script>
 </body>
 </html>
+
 
